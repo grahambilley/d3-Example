@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>gbilley3</title>
+        <script type="text/javascript" src="d3/d3.v3.min.js"></script>
+<style type ="text/css">
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+
+.axis text {
+	font-family: sans-serif;
+	font-size: 11px;
+}
+
+</style>
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+var w = 600;
+var h = 500;
+var padding = 40;
+var minVal = 10
+var maxVal = 250
+
+
+// The following function was defined at the following URL and was presented for use in Piazza by TA Brendon Duprey.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#Getting_a_random_integer_between_two_values_inclusive
+
+function getRandomIntInclusive(min, max) {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function calcRadius (x, y) {
+	return(Math.sqrt((x*x) + (y*y)));
+}
+
+var dataset = [];
+var numDataPoints = 100;
+for (var i = 0; i < numDataPoints; i++) {
+	var newNumber1 = getRandomIntInclusive(minVal, maxVal);
+	var newNumber2 = getRandomIntInclusive(minVal, maxVal);
+	dataset.push([newNumber1, newNumber2]);
+}
+
+var avgX = d3.mean(dataset, function(d) {return d[0];})
+;
+var minY = d3.min(dataset, function(d) {return d[1];})
+;
+
+var x_at_minY = function(d) {
+	for (var j = 0; j < numDataPoints; j++) {
+		if (dataset[j][1] = minY) {
+			return dataset[j][0]
+		};
+	};
+}
+;
+
+
+var xScale = d3.scale.linear()
+	.domain([0,d3.max(dataset, function(d) {return d[0]; })])
+	.range([padding, w - padding * 2])
+;
+
+var yScale = d3.scale.linear()
+	.domain([0,d3.max(dataset, function(d) {return d[1]; })])
+	.range([h - padding, padding])
+;
+
+var rScale = d3.scale.linear()
+	.domain([10,250])
+	.range([1,5])
+;
+
+var svg= d3.select("body")
+	.append("svg")
+	.attr("width", w)
+	.attr("height", h)
+;
+
+var xAxis = d3.svg.axis()
+	.scale(xScale)
+	.orient("bottom")
+;
+
+var yAxis = d3.svg.axis()
+	.scale(yScale)
+	.orient("left")
+;
+	
+svg.selectAll("circle")
+	.data(dataset)
+	.enter()
+	.append("circle")
+	.attr("cx", function(d) {
+		return xScale(d[0]);
+	})
+	.attr("cy", function(d) {
+		return yScale(d[1]);
+	})
+	.attr("r", function(d) {
+		return calcRadius(rScale(d[0]), rScale(d[1]));
+	})
+	.attr("fill", "transparent")
+	.attr("stroke", function(d) {
+		if (d[0] <= avgX ){
+			return "green";
+		} else {
+			return "blue";
+		}	
+	})
+	//.attr("stroke", "green")
+	;
+
+svg.append("text")
+	.attr("x", x_at_minY() + padding)
+	.attr("y", h - minY - padding)
+	.attr("fill", "red")
+	.attr("font-size", "15px")
+	.attr("font-family", "sans-serif")
+	.text(function(d) {
+		return ("Min Y: " + minY )
+	})
+;
+
+svg.append("text")
+	.attr("x", (w/2) - padding)
+	.attr("y", padding + 20)
+	.attr("font-size", "30px")
+	.attr("fill", "black")
+	.text("gbilley3")
+;
+
+svg.append("g")
+	.attr("class", "axis")
+	.attr("transform", "translate(0," + (h - padding) + ")")
+	.call(xAxis)
+;
+
+svg.append("g")
+	.attr("class", "axis")
+	.attr("transform", "translate(" + padding + ",0)")
+	.call(yAxis)
+;
+
+        </script>
+    </body>
+</html>  
