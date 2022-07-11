@@ -1,0 +1,3 @@
+a.2. Budget vs Rating is better at separating the classes because the data points are more spread out and the graph is less cluttered. Also the movies are more evenly distributed across the budget axis than the Wins+Noms axis.
+
+c. We use the square root and log scales to visually separate data points that are very close together. This "stretches" the smaller end of the scale and "squishes" the larger end of the scale. The log-scale does this to a greater degree, but log(0) needs to be handled separately. 

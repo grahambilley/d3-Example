@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../lib/d3.v5.min.js"></script>
+<style>
+    body {
+        font: 10px sans-serif;
+    }
+ 
+    .axis path,
+    .axis line {
+        fill: none;
+        shape-rendering: crispEdges;
+    }
+    
+    .point {
+      fill: none;
+    }
+
+    @media print {
+  svg {page-break-after: always;}
+  }
+  
+</style>
+<body>
+  
+  <script>
+  
+  // Set the dimensions of the canvas.
+  var margin = {top: 20, right: 20, bottom: 40, left: 80},
+  width = 850 - margin.left - margin.right,
+  height = 500 - margin.top - margin.bottom;
+
+  //////////////////// Graph 1 ////////////////////
+
+  // Set the ranges.
+  var x = d3.scaleLinear()
+    .range([0,width]);
+  var y = d3.scaleLinear()
+    .range([height, 0]);
+
+  // Add the first chart : WinsNoms vs Rating.
+  var chart1 = d3.select("body").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Get the Data.
+  d3.csv("movies.csv")
+    .then(function(data){
+      data.forEach(function(d) {
+        d.Id = +d.Id;
+        d.Year = +d.Year;
+        d.Runtime = +d.Runtime;
+        d.Rating = +d.Rating;
+        d.Votes = +d.Votes;
+        d.Budget = +d.Budget;
+        d.Gross = +d.Gross;
+        d.WinsNoms = +d.WinsNoms;
+        d.IsGoodRating = +d.IsGoodRating;
+      });
+
+    // Compute the scales' domains.
+    x.domain(d3.extent(data, function(d) { return d.Rating})).nice();
+    y.domain(d3.extent(data, function(d) { return d.WinsNoms})).nice();
+
+    // Add the x-axis.
+    chart1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Text labels for the x-axis.
+    chart1.append("text")
+      .attr("transform", "translate(" + (width/2) + "," + (height + margin.top + 5) + ")")
+      .style("text-anchor", "middle")
+      .text("Rating");
+
+    // Add the y-axis.
+    chart1.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y));
+    
+    // Text labels for the y-axis.
+    chart1.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 20)
+      .attr("x", -100)
+      .text("Wins+Noms");
+
+    // Add the chart title.
+    chart1.append("text")
+      .attr("y", margin.top)
+      .attr("x", width/2 - 100)
+      .attr("font-size", "13px")
+      .text("Wins+Nominations vs Rating");
+
+    // Add the points.
+    chart1.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", function(d){
+        if (d.IsGoodRating == 1)
+          return d3.symbol().size(20).type(d3.symbolCross)();
+        else
+          return d3.symbol().size(20).type(d3.symbolCircle)();
+      })
+      .attr("stroke", function(d){
+        if (d.IsGoodRating == 1)
+          return "blue";
+        else 
+          return "red";
+      })
+      .attr("transform", function(d) { return "translate(" + x(d.Rating) + "," + y(d.WinsNoms) + ")"; });
+  
+  });
+
+  var legendData = [["bad rating", "red", "circle"], ["good rating", "blue", "cross"]];
+
+  var legend = chart1.append("g")
+    .attr("class", "legend")
+    .attr("height", 0)
+    .attr("width", 0)
+    .attr('transform', 'translate(20,250)');
+
+  chart1.selectAll('.symbol')
+    .data(legendData)
+    .enter()
+    .append('path')
+    .attr('transform', function(d, i) {
+      return 'translate(' + (685) + ',' + ((i * 20) + 10) + ')';
+    })
+    .attr('d', d3.symbol().type(function(d, i) {
+        if (d[2] === "circle") 
+          return d3.symbolCircle;
+        else if (d[2] === "cross") 
+          return d3.symbolCross;
+      }))
+    .style("stroke", function(d) {
+      return d[1];
+    })
+    .style("fill", "none");
+
+  chart1.selectAll('.label')
+    .data(legendData)
+    .enter()
+    .append('text')
+    .attr("x", "700")
+    .attr("y", function(d, i){ return ((i * 20)+15);})
+    .text(function(d) {
+      return d[0];
+    });
+
+//////////////////// Graph 2 ////////////////////
+
+// Add the second chart : Budget vs Rating.
+var chart2 = d3.select("body").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Get the Data.
+  d3.csv("movies.csv")
+    .then(function(data){
+      data.forEach(function(d) {
+        d.Id = +d.Id;
+        d.Year = +d.Year;
+        d.Runtime = +d.Runtime;
+        d.Rating = +d.Rating;
+        d.Votes = +d.Votes;
+        d.Budget = +d.Budget;
+        d.Gross = +d.Gross;
+        d.WinsNoms = +d.WinsNoms;
+        d.IsGoodRating = +d.IsGoodRating;
+      });
+
+    // Compute the scales' domains.
+    x.domain(d3.extent(data, function(d) { return d.Rating})).nice();
+    y.domain(d3.extent(data, function(d) { return d.Budget})).nice();
+
+    // Add the x-axis.
+    chart2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Text labels for the x-axis.
+    chart2.append("text")
+      .attr("transform", "translate(" + (width/2) + "," + (height + margin.top + 5) + ")")
+      .style("text-anchor", "middle")
+      .text("Rating");
+
+    // Add the y-axis.
+    chart2.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y));
+    
+    // Text labels for the y-axis.
+    chart2.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 20)
+      .attr("x", -100)
+      .text("Budget");
+
+    // Add the chart title.
+    chart2.append("text")
+      .attr("y", margin.top)
+      .attr("x", width/2 - 60)
+      .attr("font-size", "13px")
+      .text("Budget vs Rating");
+
+    // Add the points.
+    chart2.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", function(d){
+        if (d.IsGoodRating == 1)
+          return d3.symbol().size(20).type(d3.symbolCross)();
+        else
+          return d3.symbol().size(20).type(d3.symbolCircle)();
+      })
+      .attr("stroke", function(d){
+        if (d.IsGoodRating == 1)
+          return "blue";
+        else 
+          return "red";
+      })
+      .attr("transform", function(d) { return "translate(" + x(d.Rating) + "," + y(d.Budget) + ")"; });
+  
+  });
+
+  var legend = chart2.append("g")
+    .attr("class", "legend")
+    .attr("height", 0)
+    .attr("width", 0)
+    .attr('transform', 'translate(20,250)');
+
+    chart2.selectAll('.symbol')
+    .data(legendData)
+    .enter()
+    .append('path')
+    .attr('transform', function(d, i) {
+      return 'translate(' + (685) + ',' + ((i * 20) + 10) + ')';
+    })
+    .attr('d', d3.symbol().type(function(d, i) {
+        if (d[2] === "circle") 
+          return d3.symbolCircle;
+        else if (d[2] === "cross") 
+          return d3.symbolCross;
+      }))
+    .style("stroke", function(d) {
+      return d[1];
+    })
+    .style("fill", "none");
+
+    chart2.selectAll('.label')
+    .data(legendData)
+    .enter()
+    .append('text')
+    .attr("x", "700")
+    .attr("y", function(d, i){ return ((i * 20)+15);})
+    .text(function(d) {
+      return d[0];
+    });
+
+  //////////////////// Graph 3 ////////////////////
+
+  // Add the third chart : Votes vs Rating sized by Wins+Nominations.
+  var chart3 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Get the Data.
+  d3.csv("movies.csv")
+    .then(function(data){
+      data.forEach(function(d) {
+        d.Id = +d.Id;
+        d.Year = +d.Year;
+        d.Runtime = +d.Runtime;
+        d.Rating = +d.Rating;
+        d.Votes = +d.Votes;
+        d.Budget = +d.Budget;
+        d.Gross = +d.Gross;
+        d.WinsNoms = +d.WinsNoms;
+        d.IsGoodRating = +d.IsGoodRating;
+      });
+
+    // Compute the scales' domains.
+    x.domain(d3.extent(data, function(d) { return d.Rating})).nice();
+    y.domain(d3.extent(data, function(d) { return d.Votes})).nice();
+
+    // Add the x-axis.
+    chart3.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Text labels for the x-axis.
+    chart3.append("text")
+      .attr("transform", "translate(" + (width/2) + "," + (height + margin.top + 5) + ")")
+      .style("text-anchor", "middle")
+      .text("Rating");
+
+    // Add the y-axis.
+    chart3.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y));
+    
+    // Text labels for the y-axis.
+    chart3.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 20)
+      .attr("x", -100)
+      .text("Votes");
+
+    // Add the chart title.
+    chart3.append("text")
+      .attr("y", margin.top)
+      .attr("x", width/2 - 160)
+      .attr("font-size", "13px")
+      .text("Votes vs Rating sized by Wins+Nominations");
+
+    // Create a scale for the points.
+    var pointScale = d3.scaleLinear()
+      .range([10, 200]);
+    pointScale.domain(d3.extent(data, function(d) { return d.WinsNoms}));
+    
+    // Define the symbol
+    var symb = d3.symbol()
+        .type(function(d) {
+          if (d.IsGoodRating == 1)
+            return d3.symbolCross
+          else
+            return d3.symbolCircle;
+        })
+				.size(function(d){
+          return pointScale(d.WinsNoms);
+        });
+
+    // Add the points.
+    chart3.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", symb)
+      .attr("stroke", function(d){
+        if (d.IsGoodRating == 1)
+          return "blue";
+        else 
+          return "red";
+      })
+      .attr("transform", function(d) { return "translate(" + x(d.Rating) + "," + y(d.Votes) + ")"; });
+  
+  });
+
+  var legend = chart3.append("g")
+    .attr("class", "legend")
+    .attr("height", 0)
+    .attr("width", 0)
+    .attr('transform', 'translate(20,250)');
+
+    chart3.selectAll('.symbol')
+    .data(legendData)
+    .enter()
+    .append('path')
+    .attr('transform', function(d, i) {
+      return 'translate(' + (600) + ',' + ((i * 20) + 10) + ')';
+    })
+    .attr('d', d3.symbol().type(function(d, i) {
+        if (d[2] === "circle") 
+          return d3.symbolCircle;
+        else if (d[2] === "cross") 
+          return d3.symbolCross;
+      }))
+    .style("stroke", function(d) {
+      return d[1];
+    })
+    .style("fill", "none");
+
+    chart3.selectAll('.label')
+    .data(legendData)
+    .enter()
+    .append('text')
+    .attr("x", "610")
+    .attr("y", function(d, i){ return ((i * 20)+15);})
+    .text(function(d) {
+      return d[0];
+    });
+
+  //////////////////// Graph 4 ////////////////////
+  
+  // Set the y-axis range.
+  var ysqrt = d3.scaleSqrt()
+    .range([height, 0]);
+
+  // Add the fourth chart : WinsNoms (square-root-scaled) vs Rating.
+  var chart4 = d3.select("body").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Get the Data.
+  d3.csv("movies.csv")
+    .then(function(data){
+      data.forEach(function(d) {
+        d.Id = +d.Id;
+        d.Year = +d.Year;
+        d.Runtime = +d.Runtime;
+        d.Rating = +d.Rating;
+        d.Votes = +d.Votes;
+        d.Budget = +d.Budget;
+        d.Gross = +d.Gross;
+        d.WinsNoms = +d.WinsNoms;
+        d.IsGoodRating = +d.IsGoodRating;
+      });
+
+    // Compute the scales' domains.
+    x.domain(d3.extent(data, function(d) { return d.Rating})).nice();
+    ysqrt.domain(d3.extent(data, function(d) { return d.WinsNoms})).nice();
+
+    // Add the x-axis.
+    chart4.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Text labels for the x-axis.
+    chart4.append("text")
+      .attr("transform", "translate(" + (width/2) + "," + (height + margin.top + 5) + ")")
+      .style("text-anchor", "middle")
+      .text("Rating");
+
+    // Add the y-axis.
+    chart4.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(ysqrt));
+    
+    // Text labels for the y-axis.
+    chart4.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 20)
+      .attr("x", -100)
+      .text("Wins+Noms");
+
+    // Add the chart title.
+    chart4.append("text")
+      .attr("y", margin.top)
+      .attr("x", width/2 - 180)
+      .attr("font-size", "13px")
+      .text("Wins+Nominations (square-root-scaled) vs Rating");
+
+    // Add the points.
+    chart4.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", function(d){
+        if (d.IsGoodRating == 1)
+          return d3.symbol().size(20).type(d3.symbolCross)();
+        else
+          return d3.symbol().size(20).type(d3.symbolCircle)();
+      })
+      .attr("stroke", function(d){
+        if (d.IsGoodRating == 1)
+          return "blue";
+        else 
+          return "red";
+      })
+      .attr("transform", function(d) { return "translate(" + x(d.Rating) + "," + ysqrt(d.WinsNoms) + ")"; });
+  
+  });
+
+  var legendData = [["bad rating", "red", "circle"], ["good rating", "blue", "cross"]];
+
+  var legend = chart4.append("g")
+    .attr("class", "legend")
+    .attr("height", 0)
+    .attr("width", 0)
+    .attr('transform', 'translate(20,250)');
+
+    chart4.selectAll('.symbol')
+    .data(legendData)
+    .enter()
+    .append('path')
+    .attr('transform', function(d, i) {
+      return 'translate(' + (685) + ',' + ((i * 20) + 10) + ')';
+    })
+    .attr('d', d3.symbol().type(function(d, i) {
+        if (d[2] === "circle") 
+          return d3.symbolCircle;
+        else if (d[2] === "cross") 
+          return d3.symbolCross;
+      }))
+    .style("stroke", function(d) {
+      return d[1];
+    })
+    .style("fill", "none");
+
+    chart4.selectAll('.label')
+    .data(legendData)
+    .enter()
+    .append('text')
+    .attr("x", "700")
+    .attr("y", function(d, i){ return ((i * 20)+15);})
+    .text(function(d) {
+      return d[0];
+    });
+
+//////////////////// Graph 5 ////////////////////
+  
+  // Set the y-axis range.
+  var ylog = d3.scaleLog()
+    .range([height, 0]);
+
+  // Add the fourth chart : WinsNoms (log-scaled) vs Rating.
+  var chart5 = d3.select("body").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Get the Data.
+  d3.csv("movies.csv")
+    .then(function(data){
+      data.forEach(function(d) {
+        d.Id = +d.Id;
+        d.Year = +d.Year;
+        d.Runtime = +d.Runtime;
+        d.Rating = +d.Rating;
+        d.Votes = +d.Votes;
+        d.Budget = +d.Budget;
+        d.Gross = +d.Gross;
+        d.WinsNoms = +d.WinsNoms;
+        d.IsGoodRating = +d.IsGoodRating;
+      });
+
+    // Compute the scales' domains.
+    x.domain(d3.extent(data, function(d) { return d.Rating})).nice();
+    ylog.domain([1, d3.max(data.map(function(d) {
+      return d.WinsNoms;
+    }))]);
+
+    // Add the x-axis.
+    chart5.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Text labels for the x-axis.
+    chart5.append("text")
+      .attr("transform", "translate(" + (width/2) + "," + (height + margin.top + 5) + ")")
+      .style("text-anchor", "middle")
+      .text("Rating");
+
+    // Add the y-axis.
+    chart5.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(ylog));
+    
+    // Text labels for the y-axis.
+    chart5.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 20)
+      .attr("x", -100)
+      .text("Wins+Noms");
+
+    // Add the chart title.
+    chart5.append("text")
+      .attr("y", margin.top)
+      .attr("x", width/2 - 180)
+      .attr("font-size", "13px")
+      .text("Wins+Nominations (log-scaled) vs Rating");
+
+    // Add the points.
+    chart5.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", function(d){
+        if (d.IsGoodRating == 1)
+          return d3.symbol().size(20).type(d3.symbolCross)();
+        else
+          return d3.symbol().size(20).type(d3.symbolCircle)();
+      })
+      .attr("stroke", function(d){
+        if (d.IsGoodRating == 1)
+          return "blue";
+        else 
+          return "red";
+      })
+      .attr("transform", function(d) { return "translate(" + x(d.Rating) + "," + ylog(d.WinsNoms) + ")"; });
+  
+  });
+
+  var legendData = [["bad rating", "red", "circle"], ["good rating", "blue", "cross"]];
+
+  var legend = chart5.append("g")
+    .attr("class", "legend")
+    .attr("height", 0)
+    .attr("width", 0)
+    .attr('transform', 'translate(20,250)');
+
+    chart5.selectAll('.symbol')
+    .data(legendData)
+    .enter()
+    .append('path')
+    .attr('transform', function(d, i) {
+      return 'translate(' + (685) + ',' + ((i * 20) + 10) + ')';
+    })
+    .attr('d', d3.symbol().type(function(d, i) {
+        if (d[2] === "circle") 
+          return d3.symbolCircle;
+        else if (d[2] === "cross") 
+          return d3.symbolCross;
+      }))
+    .style("stroke", function(d) {
+      return d[1];
+    })
+    .style("fill", "none");
+
+    chart5.selectAll('.label')
+    .data(legendData)
+    .enter()
+    .append('text')
+    .attr("x", "700")
+    .attr("y", function(d, i){ return ((i * 20)+15);})
+    .text(function(d) {
+      return d[0];
+    });
+
+  </script>
+
+</body>
+</html>
